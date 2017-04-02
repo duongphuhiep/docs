@@ -1,0 +1,84 @@
+#!/bin/sh
+
+PORT=18000
+
+SCRIPT=`readlink -f "$0"`
+SCRIPT_DIR=`dirname "$SCRIPT"`
+
+usage() {
+    cat <<EOM
+
+Helper to start all the documentation server, with the Home page on localhost:$PORT
+After 'run start', navigate to http://localhost:$PORT/index.html
+
+USAGE:
+    $(basename $0) [ACTION]
+
+ACTIONS:
+    start       - Start all documentation servers on port $PORT.
+    stop        - Stop all documentation servers.
+    restart     - Restart all documentation servers.
+
+EOM
+    exit 0
+}
+
+start() {
+	# start vuejs
+	http-server "$SCRIPT_DIR/vuejs/public" -p 18100&
+
+	# start quasar framework
+	http-server "$SCRIPT_DIR/quasar-framework.org/public" -p 18303&
+	
+	# start webpack
+	http-server "$SCRIPT_DIR/webpack.js.org/build" -p 18304&
+	
+	# start bulma
+	http-server "$SCRIPT_DIR/bulma/docs/_site" -p 18305&
+
+	# start riotjs
+	http-server "$SCRIPT_DIR/riot.github.io/_site" -p 18306&
+
+	# start vuetifyjs (configured on port 18200)
+	cd "$SCRIPT_DIR/vuetifyjs-docs"
+	npm start&
+	
+	# use the port 3999 (+another random port) for Golang tour
+	go tool tour&
+	
+	# start the home server (which can also navigate to other static docs)
+	http-server "$SCRIPT_DIR" -p $PORT&
+	echo "Goto http://locahost:18000/index.html"
+}
+
+stop() {
+	# kill the 'dotnet run watch'
+	# pkill send SIGTERM (15) by default, it is not enough to free the socket.
+	# so I sent the SIGKILL (9) here
+	#pkill -9 -x dotnet
+
+	# kill the 'http-server'
+	pkill -f "http-server"
+	pkill -f "node server"
+	
+	# kill the "golang tour" server
+	pkill -f "go tool tour"
+	pkill -f "/usr/lib/go/pkg/tool/linux_amd64/tour"
+}
+
+if [ -x $1 ]; then
+	echo "\nERROR: Missing [ACTION] argument!"
+	usage
+fi
+
+if [ $1 = 'start' ]; then
+	start
+elif [ $1 = 'stop' ]; then
+	stop
+elif [ $1 = 'restart' ]; then
+	stop
+	start
+else
+	echo "\nERROR: Unknow [ACTION] '$1'!"
+	usage
+fi
