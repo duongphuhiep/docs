@@ -43,6 +43,10 @@ start() {
 	cd "$SCRIPT_DIR/vuetifyjs-docs"
 	npm start&
 	
+	# start vue-i18n
+	cd "$SCRIPT_DIR/vue-i18n"
+	gitbook --port 18307 serve ./gitbook ./docs&
+	
 	# use the port 3999 (+another random port) for Golang tour
 	go tool tour&
 	
@@ -60,6 +64,7 @@ stop() {
 	# kill the 'http-server'
 	pkill -f "http-server"
 	pkill -f "node server"
+	pkill -f "node /usr/bin/gitbook"
 	
 	# kill the "golang tour" server
 	pkill -f "go tool tour"
