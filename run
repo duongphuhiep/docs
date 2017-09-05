@@ -47,12 +47,16 @@ start() {
 	cd "$SCRIPT_DIR/vue-i18n"
 	gitbook --port 18307 serve ./gitbook ./docs&
 	
-	# use the port 3999 (+another random port) for Golang tour
-	go tool tour&
+	# start ag-grid
+	cd "$SCRIPT_DIR/ag-grid-docs/dist"
+	php -S 127.0.0.1:18308&
 	
 	# start the home server (which can also navigate to other static docs)
 	http-server "$SCRIPT_DIR" -p $PORT&
 	echo "Goto http://locahost:18000/index.html"
+	
+	# use the port 3999 (+another random port) for Golang tour
+	go tool tour&
 }
 
 stop() {
@@ -65,6 +69,7 @@ stop() {
 	pkill -f "http-server"
 	pkill -f "node server"
 	pkill -f "node /usr/bin/gitbook"
+	pkill -f "php -S 127.0.0.1:18308"
 	
 	# kill the "golang tour" server
 	pkill -f "go tool tour"
