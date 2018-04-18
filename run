@@ -51,6 +51,10 @@ start() {
 	cd "$SCRIPT_DIR/ag-grid-docs/dist"
 	php -S 127.0.0.1:18308&
 	
+	# start echo
+	cd "$SCRIPT_DIR/echox/website"
+	hugo serve -p 18309&
+	
 	# start the home server (which can also navigate to other static docs)
 	http-server "$SCRIPT_DIR" -p $PORT&
 	echo "Goto http://locahost:18000/index.html"
@@ -70,6 +74,7 @@ stop() {
 	pkill -f "node server"
 	pkill -f "node /usr/bin/gitbook"
 	pkill -f "php -S 127.0.0.1:18308"
+	pkill -f "hugo serve -p 18309"
 	
 	# kill the "golang tour" server
 	pkill -f "go tool tour"
